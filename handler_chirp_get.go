@@ -35,14 +35,13 @@ func (cfg *apiConfig) handleChirpGet(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt: dbChirp.UpdatedAt,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	// write the chirp to the response
 	if err := json.NewEncoder(w).Encode(chirp); err != nil {
 		log.Printf("error encoding response: %v", err)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	return
 }
