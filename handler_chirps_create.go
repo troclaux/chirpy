@@ -1,8 +1,8 @@
 package main
 
 import (
+	"chirpy/internal/database"
 	"encoding/json"
-	"example5/internal/database"
 	"log"
 	"net/http"
 	"strings"
