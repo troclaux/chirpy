@@ -18,17 +18,6 @@ type User struct {
 	Email     string    `json:"email"`
 }
 
-func printStructFields(s interface{}) {
-	val := reflect.ValueOf(s)
-	typ := val.Type()
-
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		tag := field.Tag.Get("json")
-		fmt.Printf("Field: %s, Label: %s\n", field.Name, tag)
-	}
-}
-
 func (cfg *apiConfig) handleUsersCreate(w http.ResponseWriter, r *http.Request) {
 	// creates new JSON decoder to read the request body
 	decoder := json.NewDecoder(r.Body)
@@ -50,8 +39,6 @@ func (cfg *apiConfig) handleUsersCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	printStructFields(newUser)
-	log.Printf("newUser: %+v", newUser)
 	user := User{
 		ID:        newUser.ID,
 		CreatedAt: newUser.CreatedAt,
