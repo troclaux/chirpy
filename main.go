@@ -1,8 +1,8 @@
 package main
 
 import (
+	"chirpy/internal/database"
 	"database/sql"
-	"example5/internal/database"
 	"fmt"
 	"log"
 	"net/http"
