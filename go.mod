@@ -1,6 +1,6 @@
-module example5
+module github.com/troclaux/chirpy
 
-go 1.22.10
+go 1.23.4
 
 require (
 	github.com/google/uuid v1.6.0
