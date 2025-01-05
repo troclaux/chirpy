@@ -1,7 +1,6 @@
 package main
 
 import (
-	"chirpy/internal/database"
 	"database/sql"
 	"fmt"
 	"log"
@@ -10,6 +9,8 @@ import (
 	"sync/atomic"
 
 	"github.com/joho/godotenv"
+	"github.com/troclaux/chirpy/internal/database"
+
 	_ "github.com/lib/pq"
 )
 
@@ -80,6 +81,7 @@ func main() {
 	// establishes a connection pool to the database that manages multiple connections
 	// the connection string is stored in the DB_URL environment variable
 	dbURL := os.Getenv("DB_URL")
+	// _ "github.com/lib/pq" was imported to allow the line below to work properly
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal("Error connecting to database")
@@ -103,6 +105,7 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", apiCfg.handleReset)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handleMetrics)
 	mux.HandleFunc("POST /api/users", apiCfg.handleUsersCreate)
+	mux.HandleFunc("POST /api/login", apiCfg.handleLogin)
 	mux.HandleFunc("GET /api/healthz", handleReadiness)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handleCreateChirps)
 	mux.HandleFunc("GET /api/chirps", apiCfg.handleChirpsGet)

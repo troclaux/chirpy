@@ -1,7 +1,6 @@
 package main
 
 import (
-	"chirpy/internal/database"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/troclaux/chirpy/internal/database"
 )
 
 type Chirp struct {
