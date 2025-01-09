@@ -80,3 +80,10 @@ func ValidateJWT(tokenString string, tokenSecret string) (uuid.UUID, error) {
 	if issuer != TokenIssuer {
 		return uuid.Nil, errors.New("invalid issuer")
 	}
+
+	id, err := uuid.Parse(userIDString)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	return id, nil
+}
