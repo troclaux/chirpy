@@ -82,6 +82,10 @@ func main() {
 	// establishes a connection pool to the database that manages multiple connections
 	// the connection string is stored in the DB_URL environment variable
 	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL must be set")
+	}
+
 	// _ "github.com/lib/pq" was imported to allow the line below to work properly
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -94,11 +98,21 @@ func main() {
 	// creates new http request multiplexer
 	mux := http.NewServeMux()
 
+	var platform string = os.Getenv("PLATFORM")
+	if platform == "" {
+		log.Fatal("SIGNING_KEY environment variable is not set")
+	}
+
+	var signingKey string = os.Getenv("SIGNING_KEY")
+	if signingKey == "" {
+		log.Fatal("SIGNING_KEY environment variable is not set")
+	}
+
 	// initialize struct with request counter and connection pool
 	apiCfg := &apiConfig{
 		databaseQueries: dbQueries,
-		platform:        os.Getenv("PLATFORM"),
-		jwtSecret:       os.Getenv("SIGNING_KEY"),
+		platform:        platform,
+		jwtSecret:       signingKey,
 	}
 
 	// serves files to the client from the defined path
