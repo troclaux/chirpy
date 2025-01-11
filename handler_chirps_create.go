@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/troclaux/chirpy/internal/auth"
 	"github.com/troclaux/chirpy/internal/database"
 )
 
@@ -17,6 +19,12 @@ type Chirp struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Body      string    `json:"body"`
+}
+
+var badWords = map[string]int{
+	"kerfuffle": 0,
+	"sharbert":  0,
+	"fornax":    0,
 }
 
 func filterWords(originalString string, badWords map[string]int) string {
@@ -39,6 +47,26 @@ func (cfg *apiConfig) handleCreateChirps(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	// check if request has jwt
+	jwtString, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		log.Printf("error getting bearer token: %v", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// get the server's signing key from .env
+	jwtSigningKey := os.Getenv("SIGNING_KEY")
+
+	// validate jwt string
+	userID, err := auth.ValidateJWT(jwtString, jwtSigningKey)
+	if err != nil {
+		log.Printf("error validating jwt: %v", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	if len(post.Body) > 140 {
 		// write the status code 400 in the response
 		w.WriteHeader(http.StatusBadRequest)
@@ -48,15 +76,10 @@ func (cfg *apiConfig) handleCreateChirps(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	badWords := map[string]int{
-		"kerfuffle": 0,
-		"sharbert":  0,
-		"fornax":    0,
-	}
-
 	filteredText := filterWords(post.Body, badWords)
+
 	// get user_id from the request and create a new uuid
-	params := database.CreateChirpParams{Body: filteredText, UserID: post.UserID}
+	params := database.CreateChirpParams{Body: filteredText, UserID: userID}
 
 	newChirp, err := cfg.databaseQueries.CreateChirp(r.Context(), params)
 	if err != nil {
@@ -75,11 +98,15 @@ func (cfg *apiConfig) handleCreateChirps(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+
 	// Check for encoding errors
 	// encodes `Chirp` struct as json and writes it to the http response `w`
 	if err := json.NewEncoder(w).Encode(chirp); err != nil {
-		log.Printf("error encoding response: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Failed to encode response",
+		})
+		log.Printf("error encoding response: %v", err)
 		return
 	}
 	return
