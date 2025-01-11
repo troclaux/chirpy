@@ -19,6 +19,7 @@ type apiConfig struct {
 	fileserverHits  atomic.Int32
 	databaseQueries *database.Queries
 	platform        string
+	jwtSecret       string
 }
 
 // middlewareMetricsInc increments the fileserverHits counter for each request
@@ -94,7 +95,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	// initialize struct with request counter and connection pool
-	apiCfg := &apiConfig{databaseQueries: dbQueries, platform: os.Getenv("PLATFORM")}
+	apiCfg := &apiConfig{
+		databaseQueries: dbQueries,
+		platform:        os.Getenv("PLATFORM"),
+		jwtSecret:       os.Getenv("SIGNING_KEY"),
+	}
 
 	// serves files to the client from the defined path
 	fileServer := http.FileServer(http.Dir("."))
