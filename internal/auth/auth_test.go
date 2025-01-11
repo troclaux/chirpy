@@ -114,7 +114,7 @@ func TestValidateJWT(t *testing.T) {
 func TestGetAuthorizationToken(t *testing.T) {
 	headers := http.Header{}
 	headers.Set("Authorization", "Bearer   some-token   ")
-	token, err := GetAuthorizationToken(headers)
+	token, err := GetBearerToken(headers)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -124,7 +124,7 @@ func TestGetAuthorizationToken(t *testing.T) {
 
 	headers = http.Header{}
 	headers.Set("Authorization", "")
-	_, err = GetAuthorizationToken(headers)
+	_, err = GetBearerToken(headers)
 	if err == nil {
 		t.Errorf("expected error, got nil")
 	} else if err.Error() != "Authorization header not found" {
@@ -132,7 +132,7 @@ func TestGetAuthorizationToken(t *testing.T) {
 	}
 
 	headers = http.Header{}
-	token, err = GetAuthorizationToken(headers)
+	token, err = GetBearerToken(headers)
 	if err == nil {
 		t.Errorf("expected error, got nil")
 	} else if err.Error() != "Authorization header not found" {
