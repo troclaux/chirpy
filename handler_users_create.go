@@ -53,7 +53,7 @@ func (cfg *apiConfig) handleUsersCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user := User{
+	userResponse := User{
 		ID:        newUser.ID,
 		CreatedAt: newUser.CreatedAt,
 		UpdatedAt: newUser.UpdatedAt,
@@ -66,7 +66,7 @@ func (cfg *apiConfig) handleUsersCreate(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusCreated)
 
 	// Check for encoding errors
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(userResponse); err != nil {
 		log.Printf("error encoding response: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
