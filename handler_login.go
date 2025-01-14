@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/troclaux/chirpy/internal/auth"
+	"github.com/troclaux/chirpy/internal/database"
 )
 
 func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -18,9 +19,8 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	// declare struct to store data
 	type Credential struct {
-		Password           string `json:"password"`
-		Email              string `json:"email"`
-		Expires_in_seconds *int   `json:"expires_in_seconds,omitempty"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
 	}
 
 	credential := Credential{}
@@ -60,11 +60,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	jwtSigningKey := os.Getenv("SIGNING_KEY")
 
 	// Default expiration time is 1 hour
-	expirationSeconds := 3600
-	if credential.Expires_in_seconds != nil {
-		// If specified, use the minimum between requested time and max time
-		expirationSeconds = *credential.Expires_in_seconds
-	}
+	const expirationSeconds int = 3600
 
 	// Convert seconds to Duration (need to multiply by time.Second)
 	expirationDuration := time.Duration(expirationSeconds) * time.Second
@@ -76,22 +72,42 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// generate refresh token string
+	refreshTokenString, err := auth.MakeRefreshToken()
+	if err != nil {
+		log.Printf("error generating refresh token: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// create struct to store parameters to run sql query that creates new refresh token
+	createRefreshTokenParameters := database.CreateRefreshTokenParams{
+		Token:     refreshTokenString,
+		UserID:    potentialUser.ID,
+		ExpiresAt: time.Now().Add(60 * 24 * time.Hour),
+	}
+
+	// add new refresh token to postgres database
+	_, err = cfg.databaseQueries.CreateRefreshToken(r.Context(), createRefreshTokenParameters)
+
 	// response struct
 	type UserWithoutPassword struct {
-		ID        uuid.UUID `json:"id"`
-		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at"`
-		Email     string    `json:"email"`
-		Token     string    `json:"token"`
+		ID           uuid.UUID `json:"id"`
+		CreatedAt    time.Time `json:"created_at"`
+		UpdatedAt    time.Time `json:"updated_at"`
+		Email        string    `json:"email"`
+		Token        string    `json:"token"`
+		RefreshToken string    `json:"refresh_token"`
 	}
 
 	// set response values (user fields without password and with the jwt)
 	user := UserWithoutPassword{
-		ID:        potentialUser.ID,
-		CreatedAt: potentialUser.CreatedAt,
-		UpdatedAt: potentialUser.UpdatedAt,
-		Email:     potentialUser.Email,
-		Token:     tokenString,
+		ID:           potentialUser.ID,
+		CreatedAt:    potentialUser.CreatedAt,
+		UpdatedAt:    potentialUser.UpdatedAt,
+		Email:        potentialUser.Email,
+		Token:        tokenString,
+		RefreshToken: refreshTokenString,
 	}
 
 	// Set headers before writing response
