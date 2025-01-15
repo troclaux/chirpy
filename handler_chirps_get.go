@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,13 +9,17 @@ import (
 
 func (cfg *apiConfig) handleChirpsGet(w http.ResponseWriter, r *http.Request) {
 	dbChirps, err := cfg.databaseQueries.GetChirps(r.Context())
+	if err == sql.ErrNoRows {
+		log.Printf("couldn't get chirps: %v", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		log.Printf("error getting chirps: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// attempt to get the chirp from the database
 	// IMPORTANT: convert the dbChirps to a map of Chirps{}
 	chirps := []Chirp{}
 	for _, dbChirp := range dbChirps {
