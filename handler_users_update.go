@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -60,6 +61,13 @@ func (cfg *apiConfig) handleUsersUpdate(w http.ResponseWriter, r *http.Request) 
 	}
 
 	updatedUser, err := cfg.databaseQueries.UpdateUser(r.Context(), updateUserParams)
+
+	// if user is not found on database by id
+	if err == sql.ErrNoRows {
+		log.Printf("couldn't find user by id: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	userResponse := User{
 		ID:        updatedUser.ID,
