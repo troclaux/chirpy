@@ -130,6 +130,7 @@ func main() {
 	mux.HandleFunc("GET /api/chirps", apiCfg.handleChirpsGet)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.handleChirpGet)
 	mux.HandleFunc("POST /api/refresh", apiCfg.handleRefreshToken)
+	mux.HandleFunc("POST /api/revoke", apiCfg.handleTokenRevocation)
 
 	fmt.Println("Server is running on http://localhost:8080")
 
