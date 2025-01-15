@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -14,13 +15,18 @@ func (cfg *apiConfig) handleChirpGet(w http.ResponseWriter, r *http.Request) {
 	strID := r.PathValue("chirpID")
 	chirpID, err := uuid.Parse(strID)
 	if err != nil {
-		log.Println("Error parsing UUID string:", err)
+		log.Println("Error parsing UUID string from URL:", err)
 		return
 	}
 
 	// attempt to get the chirp from the database
 	// IMPORTANT: convert the dbChirp to a Chirp struct
 	dbChirp, err := cfg.databaseQueries.GetChirp(r.Context(), chirpID)
+	if err == sql.ErrNoRows {
+		log.Printf("couldn't get chirp: %v", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		log.Printf("error getting chirp: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
