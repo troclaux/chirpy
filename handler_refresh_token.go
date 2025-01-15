@@ -21,7 +21,7 @@ func (cfg *apiConfig) handleRefreshToken(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// make sql query searching for refresh token in database
+	// run sql query that searches the refresh token in the database
 	refreshToken, err := cfg.databaseQueries.GetUserFromRefreshToken(r.Context(), jwtString)
 	if err != nil {
 		log.Printf("error getting user with refresh token: %v", err)
@@ -32,6 +32,13 @@ func (cfg *apiConfig) handleRefreshToken(w http.ResponseWriter, r *http.Request)
 	// if refresh token is expired
 	if refreshToken.ExpiresAt.Before(time.Now()) {
 		log.Printf("refresh token expired: %v", refreshToken.ExpiresAt)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// if refresh token is revoked
+	if refreshToken.RevokedAt.Valid {
+		log.Printf("refresh token has been revoked at: %v", refreshToken.RevokedAt)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
