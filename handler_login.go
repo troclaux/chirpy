@@ -98,6 +98,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Email        string    `json:"email"`
 		Token        string    `json:"token"`
 		RefreshToken string    `json:"refresh_token"`
+		IsChirpyRed  bool      `json:"is_chirpy_red"`
 	}
 
 	// set response values (user fields without password and with the jwt)
@@ -108,6 +109,7 @@ func (cfg *apiConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Email:        potentialUser.Email,
 		Token:        tokenString,
 		RefreshToken: refreshTokenString,
+		IsChirpyRed:  potentialUser.IsChirpyRed.Bool,
 	}
 
 	// Set headers before writing response

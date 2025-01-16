@@ -70,11 +70,12 @@ func (cfg *apiConfig) handleUsersUpdate(w http.ResponseWriter, r *http.Request) 
 	}
 
 	userResponse := User{
-		ID:        updatedUser.ID,
-		CreatedAt: updatedUser.CreatedAt,
-		UpdatedAt: updatedUser.UpdatedAt,
-		Email:     updatedUser.Email,
-		Password:  updatedUser.HashedPassword,
+		ID:          updatedUser.ID,
+		CreatedAt:   updatedUser.CreatedAt,
+		UpdatedAt:   updatedUser.UpdatedAt,
+		Email:       updatedUser.Email,
+		Password:    updatedUser.HashedPassword,
+		IsChirpyRed: updatedUser.IsChirpyRed.Bool,
 	}
 
 	// Set headers before writing response
