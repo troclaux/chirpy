@@ -20,6 +20,7 @@ type apiConfig struct {
 	databaseQueries *database.Queries
 	platform        string
 	jwtSecret       string
+	polkaKey        string
 }
 
 // middlewareMetricsInc increments the fileserverHits counter for each request
@@ -108,11 +109,17 @@ func main() {
 		log.Fatal("SIGNING_KEY environment variable is not set")
 	}
 
+	var polkaKey string = os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
+	}
+
 	// initialize struct with request counter and connection pool
 	apiCfg := &apiConfig{
 		databaseQueries: dbQueries,
 		platform:        platform,
 		jwtSecret:       signingKey,
+		polkaKey:        polkaKey,
 	}
 
 	// serves files to the client from the defined path
