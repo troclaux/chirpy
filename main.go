@@ -133,6 +133,7 @@ func main() {
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.handleChirpDelete)
 	mux.HandleFunc("POST /api/refresh", apiCfg.handleRefreshToken)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handleTokenRevocation)
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.handleEventWebhook)
 
 	fmt.Println("Server is running on http://localhost:8080")
 
