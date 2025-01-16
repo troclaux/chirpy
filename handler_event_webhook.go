@@ -7,9 +7,23 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/troclaux/chirpy/internal/auth"
 )
 
 func (cfg *apiConfig) handleEventWebhook(w http.ResponseWriter, r *http.Request) {
+
+	// check if request has correct api key
+	requestApiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		log.Printf("error getting authorization header: %v", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if requestApiKey != cfg.polkaKey {
+		log.Printf("invalid polka key: %v", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	// decode request
 	decoder := json.NewDecoder(r.Body)
